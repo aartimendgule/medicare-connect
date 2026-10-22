@@ -1,0 +1,10 @@
+<section class="auth-art">
+  <span class="brand">MediCare Connect</span>
+  <div>
+    <h1>Every appointment, record and doctor in one calm place.</h1>
+    <p>Book a visit in seconds, keep your history in one record, and let clinics see who is free right now.</p>
+  </div>
+  <img class="art" src="{{ url_for('static', filename='img/hero.jpg') }}"
+       onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/hero-clinic.svg') }}';this.classList.add('svg')"
+       alt="Doctor with a patient">
+</section>

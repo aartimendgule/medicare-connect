@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_macros.html" import appt_table with context %}
+{% block title %}{{ p.name }} · MediCare Connect{% endblock %}
+{% block content %}
+<div class="row"><h1>{{ p.name }}</h1>
+  {% if session.user.role == 'admin' %}<a class="btn ghost" href="{{ url_for('patient_form', pid=p.id) }}">Edit details</a>{% endif %}
+</div>
+<dl class="facts">
+  <div><dt>Phone</dt><dd>{{ p.phone or '-' }}</dd></div>
+  <div><dt>Date of birth</dt><dd>{{ p.dob.strftime('%d %b %Y') if p.dob else '-' }}</dd></div>
+  <div><dt>Gender</dt><dd>{{ p.gender or '-' }}</dd></div>
+  <div><dt>Blood group</dt><dd>{{ p.blood_group or '-' }}</dd></div>
+  <div><dt>Allergies</dt><dd>{{ p.allergies or 'None recorded' }}</dd></div>
+  <div><dt>Address</dt><dd>{{ p.address or '-' }}</dd></div>
+</dl>
+
+{% if session.user.role == 'doctor' %}
+<h2>Add a record</h2>
+<form method="post" action="{{ url_for('add_record', pid=p.id) }}" class="form narrow">
+  <label>Diagnosis<textarea name="diagnosis" rows="2" required></textarea></label>
+  <label>Prescription<textarea name="prescription" rows="2"></textarea></label>
+  <label>Notes<textarea name="notes" rows="2"></textarea></label>
+  {% if open_appts %}
+  <label>Link to appointment (marks it complete)
+    <select name="appointment_id"><option value="">Don't link</option>
+      {% for a in open_appts %}<option value="{{ a.id }}">{{ a.appt_date.strftime('%d %b %Y') }}, {{ a.appt_time|hhmm }}</option>{% endfor %}
+    </select></label>
+  {% endif %}
+  <button class="btn">Save record</button>
+</form>
+{% endif %}
+
+<h2>Medical records</h2>
+{% for r in records %}
+<article class="record">
+  <header><strong>{{ r.created_at.strftime('%d %b %Y') }}</strong> with {{ r.doctor_name }}</header>
+  <p><b>Diagnosis:</b> {{ r.diagnosis }}</p>
+  {% if r.prescription %}<p><b>Prescription:</b> {{ r.prescription }}</p>{% endif %}
+  {% if r.notes %}<p><b>Notes:</b> {{ r.notes }}</p>{% endif %}
+</article>
+{% else %}<p class="empty">No records yet.</p>{% endfor %}
+
+<h2>Appointments</h2>
+{{ appt_table(appts) }}
+{% endblock %}

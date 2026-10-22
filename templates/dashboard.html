@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "_macros.html" import appt_table, day_board with context %}
+{% block title %}Dashboard · MediCare Connect{% endblock %}
+{% block content %}
+{% set role = session.user.role %}
+<header class="hello">
+  <div class="hello-text">
+    <h1>Good {{ greeting }}, {{ first }}</h1>
+    <p class="muted">{{ today.strftime('%A, %d %B %Y') }}</p>
+    {% if role in ('patient', 'admin') %}<a class="btn" href="{{ url_for('book') }}">Book appointment</a>{% endif %}
+  </div>
+  <img src="{{ url_for('static', filename='img/banner.jpg') }}"
+       onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/banner.svg') }}';this.classList.add('svg')" alt="">
+</header>
+
+{% if role == 'admin' %}
+<div class="stats">{% for label, n in stats.items() %}<div><b>{{ n }}</b><span>{{ label }}</span></div>{% endfor %}</div>
+{{ day_board(board, day, prev_day, next_day, hours, true, "Who is free") }}
+<div class="cards2">
+  <section class="card">
+    <h2>Next 7 days</h2>
+    <div class="bars">{% for w in week %}<div class="bar" title="{{ w.n }} appointments"><b>{{ w.n }}</b><i style="height: {{ w.pct }}%"></i><span>{{ w.label }}</span></div>{% endfor %}</div>
+  </section>
+  <section class="card">
+    <h2>All appointments</h2>
+    <div class="mix">
+      <div class="donut" role="img" aria-label="{{ mix.scheduled }} scheduled, {{ mix.completed }} completed, {{ mix.cancelled }} cancelled"
+           style="--a: {{ mix.a }}%; --b: {{ mix.b }}%"><span>{{ mix.total }}</span></div>
+      <ul class="legend col">
+        <li><i class="sun"></i>{{ mix.scheduled }} scheduled</li>
+        <li><i class="leaf"></i>{{ mix.completed }} completed</li>
+        <li><i class="grey"></i>{{ mix.cancelled }} cancelled</li>
+      </ul>
+    </div>
+  </section>
+</div>
+<h2>Schedule for {{ day.strftime('%d %b') }}</h2>
+{{ appt_table(appts, "No appointments on this day.") }}
+
+{% elif role == 'doctor' %}
+{% if next_up %}
+<section class="nextup">
+  <div class="when"><b>{{ next_up.appt_time|hhmm }}</b><span>{{ 'Today' if next_up.appt_date == today else next_up.appt_date.strftime('%d %b') }}</span></div>
+  <div><h2>Next patient: {{ next_up.patient_name }}</h2><p>{{ next_up.reason or 'No reason given' }}</p></div>
+  <a class="btn light" href="{{ url_for('patient_detail', pid=next_up.patient_id) }}">Open record</a>
+</section>
+{% else %}
+<p class="empty">No more patients waiting on {{ day.strftime('%d %b') }}.</p>
+{% endif %}
+<div class="stats three">
+  <div><b>{{ counts.total }}</b><span>On the schedule</span></div>
+  <div><b>{{ counts.left }}</b><span>Still to see</span></div>
+  <div><b>{{ counts.done }}</b><span>Completed</span></div>
+</div>
+{{ day_board(board, day, prev_day, next_day, hours, false, "Your day") }}
+<h2>Appointments</h2>
+{{ appt_table(appts, "No appointments on this day.") }}
+
+{% else %}
+{% if next_up %}
+<section class="nextup">
+  <div class="when"><b>{{ next_up.appt_time|hhmm }}</b><span>{{ when }}, {{ next_up.appt_date.strftime('%d %b') }}</span></div>
+  <div><h2>Your next visit: {{ next_up.doctor_name }}</h2><p>{{ next_up.specialization }}{% if next_up.reason %}, {{ next_up.reason }}{% endif %}</p></div>
+  <form method="post" action="{{ url_for('appointment_action', aid=next_up.id, action='cancel') }}" onsubmit="return confirm('Cancel this appointment?')"><button class="btn light">Cancel visit</button></form>
+</section>
+{% else %}
+<section class="nextup quiet">
+  <div><h2>No visits booked</h2><p>Pick a free slot on the board below, or book from the button above.</p></div>
+</section>
+{% endif %}
+<div class="cards2">
+  <section class="card">
+    <h2>Health profile</h2>
+    <dl class="facts flat">
+      <div><dt>Blood group</dt><dd>{{ profile.blood_group or 'Not added' }}</dd></div>
+      <div><dt>Allergies</dt><dd>{{ profile.allergies or 'None recorded' }}</dd></div>
+      <div><dt>Date of birth</dt><dd>{{ profile.dob.strftime('%d %b %Y') if profile.dob else 'Not added' }}</dd></div>
+    </dl>
+  </section>
+  <section class="card">
+    <h2>Latest record</h2>
+    {% if latest %}
+      <p><b>{{ latest.created_at.strftime('%d %b %Y') }}</b> with {{ latest.doctor_name }}</p>
+      <p>{{ latest.diagnosis }}</p>
+      <a href="{{ url_for('patient_detail', pid=session.user.patient_id) }}">See all records</a>
+    {% else %}<p class="muted">Your doctor's notes will appear here after a visit.</p>{% endif %}
+  </section>
+</div>
+{{ day_board(board, day, prev_day, next_day, hours, true, "Find a free slot") }}
+<h2>Upcoming appointments</h2>
+{{ appt_table(appts, "Nothing scheduled yet.") }}
+{% endif %}
+{% endblock %}

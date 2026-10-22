@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Sign in · MediCare Connect{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  {% include "_auth_art.html" %}
+  <section class="auth-card">
+    <h2>Welcome back</h2>
+    <p class="muted">Sign in with your email and password.</p>
+    <form method="post" class="form">
+      <label>Email<input type="email" name="email" autocomplete="email" required autofocus></label>
+      <label>Password<input type="password" name="password" id="pw" autocomplete="current-password" required></label>
+      <label class="check"><input type="checkbox" onchange="pw.type = this.checked ? 'text' : 'password'"> Show password</label>
+      <button class="btn">Sign in</button>
+    </form>
+    <p class="muted">New here? <a href="{{ url_for('register') }}">Create an account</a> with any email and password.</p>
+  </section>
+</div>
+{% endblock %}

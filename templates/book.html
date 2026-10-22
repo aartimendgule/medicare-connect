@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Book appointment · MediCare Connect{% endblock %}
+{% block content %}
+<h1>Book an appointment</h1>
+<form method="post" class="form narrow">
+  {% if session.user.role == 'admin' %}
+  <label>Patient<select name="patient_id" required><option value="">Choose a patient</option>
+    {% for p in patients %}<option value="{{ p.id }}" {{ 'selected' if pre.patient_id == p.id }}>{{ p.name }}</option>{% endfor %}</select></label>
+  {% endif %}
+  <label>Doctor<select name="doctor_id" id="doctorSel" required><option value="">Choose a doctor</option>
+    {% for d in doctors %}<option value="{{ d.id }}" {{ 'selected' if pre.doctor_id == d.id }}>{{ d.name }}, {{ d.specialization }}</option>{% endfor %}</select></label>
+  <label>Date<input type="date" name="appt_date" id="dateIn" min="{{ today }}" value="{{ pre.date }}" required></label>
+  <label>Time<select name="appt_time" id="timeSel" required><option value="">Choose a doctor and date first</option></select></label>
+  <label>Reason for visit<input name="reason" maxlength="255"></label>
+  <button class="btn">Book appointment</button>
+</form>
+<script>
+const docSel = document.getElementById('doctorSel'), dateIn = document.getElementById('dateIn'), timeSel = document.getElementById('timeSel');
+async function loadSlots(want) {
+  if (!docSel.value || !dateIn.value) return;
+  const res = await fetch(`{{ url_for('slots') }}?doctor_id=${docSel.value}&date=${dateIn.value}`);
+  const data = await res.json();
+  timeSel.innerHTML = data.slots.length
+    ? '<option value="">Choose a time</option>' + data.slots.map(s => `<option>${s}</option>`).join('')
+    : '<option value="">No free times that day</option>';
+  if (typeof want === 'string' && want) timeSel.value = want;
+}
+docSel.addEventListener('change', () => loadSlots());
+dateIn.addEventListener('change', () => loadSlots());
+loadSlots({{ pre.time|tojson }});
+</script>
+{% endblock %}

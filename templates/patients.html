@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Patients · MediCare Connect{% endblock %}
+{% block content %}
+<div class="row"><h1>Patients</h1>
+  {% if session.user.role == 'admin' %}<a class="btn" href="{{ url_for('patient_form') }}">Add patient</a>{% endif %}
+</div>
+<form method="get" class="search"><input type="search" name="q" value="{{ q }}" placeholder="Search by name or phone"><button class="btn ghost">Search</button></form>
+{% if rows %}
+<div class="scroll"><table>
+  <thead><tr><th>Name</th><th>Phone</th><th>Gender</th><th>Blood group</th><th>Allergies</th></tr></thead>
+  <tbody>{% for p in rows %}
+    <tr><td><span class="av c{{ p.name|length % 5 }}">{{ p.name|initials }}</span><a href="{{ url_for('patient_detail', pid=p.id) }}">{{ p.name }}</a></td><td>{{ p.phone or '' }}</td><td>{{ p.gender or '' }}</td><td>{{ p.blood_group or '' }}</td><td>{{ p.allergies or '' }}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% else %}<p class="empty">No patients match your search.</p>{% endif %}
+{% endblock %}

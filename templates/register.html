@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Create account · MediCare Connect{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  {% include "_auth_art.html" %}
+  <section class="auth-card">
+    <h2>Create your account</h2>
+    <p class="muted">Use any email and password. You'll be signed in straight away.</p>
+    <form method="post" class="form" id="regForm">
+      <fieldset class="seg">
+        <legend>I am a</legend>
+        <label><input type="radio" name="role" value="patient" {{ 'checked' if f.get('role') != 'doctor' }}> Patient</label>
+        <label><input type="radio" name="role" value="doctor" {{ 'checked' if f.get('role') == 'doctor' }}> Doctor</label>
+      </fieldset>
+      <label>Full name<input name="name" value="{{ f.get('name', '') }}" required autofocus></label>
+      <label>Email<input type="email" name="email" value="{{ f.get('email', '') }}" autocomplete="email" required></label>
+      <label>Password<input type="password" name="password" id="pw" minlength="6" autocomplete="new-password" required></label>
+      <label class="check"><input type="checkbox" onchange="pw.type = this.checked ? 'text' : 'password'"> Show password</label>
+      <label>Phone<input name="phone" inputmode="tel" value="{{ f.get('phone', '') }}"></label>
+
+      <div class="group" data-role="patient">
+        <label>Date of birth<input type="date" name="dob" value="{{ f.get('dob', '') }}"></label>
+        <label>Gender
+          <select name="gender"><option value="">Prefer not to say</option>{% for g in ['Female','Male','Other'] %}<option {{ 'selected' if f.get('gender') == g }}>{{ g }}</option>{% endfor %}</select>
+        </label>
+        <label>Blood group
+          <select name="blood_group"><option value="">Not sure</option>{% for b in ['A+','A-','B+','B-','AB+','AB-','O+','O-'] %}<option {{ 'selected' if f.get('blood_group') == b }}>{{ b }}</option>{% endfor %}</select>
+        </label>
+      </div>
+      <div class="group" data-role="doctor" hidden>
+        <label>Specialization<input name="specialization" value="{{ f.get('specialization', '') }}" placeholder="e.g. Cardiology"></label>
+        <label>Years of experience<input type="number" name="experience_years" min="0" value="{{ f.get('experience_years', 0) }}"></label>
+      </div>
+      <button class="btn">Create account</button>
+    </form>
+    <p class="muted">Already registered? <a href="{{ url_for('login') }}">Sign in</a></p>
+  </section>
+</div>
+<script>
+const form = document.getElementById('regForm');
+function syncRole() {
+  const role = form.querySelector('input[name=role]:checked').value;
+  form.querySelectorAll('.group').forEach(g => {
+    const on = g.dataset.role === role;
+    g.hidden = !on;
+    g.querySelectorAll('input,select').forEach(i => i.disabled = !on);
+  });
+  form.querySelector('[name=specialization]').required = role === 'doctor';
+}
+form.querySelectorAll('input[name=role]').forEach(r => r.addEventListener('change', syncRole));
+syncRole();
+</script>
+{% endblock %}

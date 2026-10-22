@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}MediCare Connect{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{{ 'app' if session.user else 'auth' }}">
+{% if session.user %}
+{% set ep = request.endpoint %}
+<aside class="side">
+  <a class="brand" href="{{ url_for('dashboard') }}">
+    <svg viewBox="0 0 40 20" width="30" height="15" aria-hidden="true"><path d="M0 10h10l3-8 5 16 4-12 2 4h16" fill="none" stroke="#F2545B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    MediCare Connect
+  </a>
+  <nav>
+    <a href="{{ url_for('dashboard') }}" class="{{ 'on' if ep == 'dashboard' }}">Dashboard</a>
+    {% if session.user.role in ('admin', 'doctor') %}<a href="{{ url_for('patients') }}" class="{{ 'on' if ep in ('patients', 'patient_detail', 'patient_form') }}">Patients</a>{% endif %}
+    {% if session.user.role == 'patient' %}<a href="{{ url_for('patient_detail', pid=session.user.patient_id) }}" class="{{ 'on' if ep == 'patient_detail' }}">My records</a>{% endif %}
+    <a href="{{ url_for('doctors') }}" class="{{ 'on' if ep in ('doctors', 'doctor_new') }}">Doctors</a>
+    <a href="{{ url_for('appointments') }}" class="{{ 'on' if ep in ('appointments', 'book') }}">Appointments</a>
+  </nav>
+  <div class="who">
+    <span class="av c{{ session.user.name|length % 5 }}">{{ session.user.name|initials }}</span>
+    <div><strong>{{ session.user.name }}</strong><small>{{ session.user.role }}</small><a href="{{ url_for('logout') }}">Sign out</a></div>
+  </div>
+</aside>
+{% endif %}
+<main>
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}
+    <div class="flash {{ cat }}" role="status">{{ msg }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

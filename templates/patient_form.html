@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if editing else 'Add' }} patient · MediCare Connect{% endblock %}
+{% block content %}
+<h1>{{ 'Edit patient' if editing else 'Add patient' }}</h1>
+<form method="post" class="form narrow">
+  <label>Full name<input name="name" value="{{ p.name or '' }}" required></label>
+  <label>Phone<input name="phone" value="{{ p.phone or '' }}"></label>
+  <label>Date of birth<input type="date" name="dob" value="{{ p.dob or '' }}"></label>
+  <label>Gender<select name="gender">
+    <option value="">Not stated</option>{% for g in ['Female','Male','Other'] %}<option {{ 'selected' if p.gender == g }}>{{ g }}</option>{% endfor %}</select></label>
+  <label>Blood group<input name="blood_group" maxlength="5" value="{{ p.blood_group or '' }}"></label>
+  <label>Address<input name="address" value="{{ p.address or '' }}"></label>
+  <label>Allergies<input name="allergies" value="{{ p.allergies or '' }}"></label>
+  <button class="btn">{{ 'Save changes' if editing else 'Add patient' }}</button>
+</form>
+{% endblock %}

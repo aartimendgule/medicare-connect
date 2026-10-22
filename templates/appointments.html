@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from "_macros.html" import appt_table with context %}
+{% block title %}Appointments · MediCare Connect{% endblock %}
+{% block content %}
+<div class="row"><h1>Appointments</h1>
+  {% if session.user.role in ('patient', 'admin') %}<a class="btn" href="{{ url_for('book') }}">Book appointment</a>{% endif %}
+</div>
+{{ appt_table(rows) }}
+{% endblock %}

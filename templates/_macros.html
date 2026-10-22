@@ -1,0 +1,56 @@
+{% macro appt_table(rows, empty="No appointments yet.") %}
+{% if rows %}
+<div class="scroll"><table>
+  <thead><tr><th>When</th><th>Patient</th><th>Doctor</th><th>Reason</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for a in rows %}
+  <tr>
+    <td>{{ a.appt_date.strftime('%d %b %Y') }}, {{ a.appt_time|hhmm }}</td>
+    <td>{% if session.user.role != 'patient' %}<a href="{{ url_for('patient_detail', pid=a.patient_id) }}">{{ a.patient_name }}</a>{% else %}{{ a.patient_name }}{% endif %}</td>
+    <td>{{ a.doctor_name }}<small>{{ a.specialization }}</small></td>
+    <td>{{ a.reason or '' }}</td>
+    <td><span class="tag {{ a.status }}">{{ a.status }}</span></td>
+    <td class="act">
+      {% if a.status == 'scheduled' %}
+        {% if session.user.role != 'patient' %}
+        <form method="post" action="{{ url_for('appointment_action', aid=a.id, action='complete') }}"><button class="link">Mark complete</button></form>
+        {% endif %}
+        <form method="post" action="{{ url_for('appointment_action', aid=a.id, action='cancel') }}" onsubmit="return confirm('Cancel this appointment?')"><button class="link danger">Cancel</button></form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% else %}<p class="empty">{{ empty }}</p>{% endif %}
+{% endmacro %}
+
+{% macro day_board(board, day, prev_day, next_day, hours, link, title="Availability") %}
+<section class="board">
+  <div class="board-top">
+    <h2>{{ title }}, {{ day.strftime('%a %d %b') }}</h2>
+    <div class="daynav">
+      <a href="{{ url_for('dashboard', day=prev_day) }}" aria-label="Previous day">&lsaquo;</a>
+      <form method="get"><input type="date" name="day" value="{{ day.isoformat() }}" onchange="this.form.submit()" aria-label="Choose a day"></form>
+      <a href="{{ url_for('dashboard', day=next_day) }}" aria-label="Next day">&rsaquo;</a>
+    </div>
+    <ul class="legend"><li><i class="free"></i>Free{% if link %} (tap to book){% endif %}</li><li><i class="booked"></i>Booked</li><li><i class="past"></i>Passed</li></ul>
+  </div>
+  {% if board %}
+  <div class="scroll"><div class="grid">
+    <span></span>
+    {% for h in hours %}<span class="hr">{{ h }}:00</span>{% endfor %}
+    {% for d in board %}
+      <div class="dr"><span class="av c{{ d.name|length % 5 }}">{{ d.name|initials }}</span><div><strong>{{ d.name }}</strong><small>{{ d.specialization }}, {{ d.free }} free</small></div></div>
+      {% for c in d.cells %}
+        {% if c.state == 'free' and link %}
+          <a class="cell free" href="{{ url_for('book', doctor_id=d.id, date=day.isoformat(), time=c.time) }}" title="{{ c.time }} is free. Book this slot." aria-label="Book {{ d.name }} at {{ c.time }}"></a>
+        {% else %}
+          <span class="cell {{ c.state }}" title="{{ c.time }}{{ ', ' ~ c.who if c.who else '' }}"></span>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div></div>
+  {% else %}<p class="empty">No doctors have joined yet.</p>{% endif %}
+</section>
+{% endmacro %}

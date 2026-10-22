@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Doctors · MediCare Connect{% endblock %}
+{% block content %}
+<div class="row"><h1>Doctors</h1>
+  {% if session.user.role == 'admin' %}<a class="btn" href="{{ url_for('doctor_new') }}">Add doctor</a>{% endif %}
+</div>
+{% if rows %}
+<div class="scroll"><table>
+  <thead><tr><th>Name</th><th>Specialization</th><th>Experience</th><th>Contact</th></tr></thead>
+  <tbody>{% for d in rows %}
+    <tr><td><span class="av c{{ d.name|length % 5 }}">{{ d.name|initials }}</span>{{ d.name }}</td><td>{{ d.specialization }}</td><td>{{ d.experience_years }} yrs</td><td>{{ d.phone or d.email }}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% else %}<p class="empty">No doctors yet. Add one so patients can book appointments.</p>{% endif %}
+{% endblock %}

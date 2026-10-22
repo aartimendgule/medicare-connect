@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Add doctor · MediCare Connect{% endblock %}
+{% block content %}
+<h1>Add a doctor</h1>
+<form method="post" class="form narrow">
+  <label>Full name<input name="name" required></label>
+  <label>Email (used to sign in)<input type="email" name="email" required></label>
+  <label>Temporary password<input type="password" name="password" minlength="8" required></label>
+  <label>Specialization<input name="specialization" required></label>
+  <label>Phone<input name="phone"></label>
+  <label>Years of experience<input type="number" name="experience_years" min="0" value="0"></label>
+  <button class="btn">Add doctor</button>
+</form>
+{% endblock %}
